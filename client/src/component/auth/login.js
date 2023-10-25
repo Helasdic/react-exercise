@@ -1,27 +1,50 @@
 import React, { useState } from "react";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import apiUser from "../api/apiUser";
-import { useNavigate } from "react-router-dom";
 
 export default function Login() {
+  const { loginCbHandler } = props;
   const [form, setForm] = useState({
     email: "",
     password: "",
   });
 
-  const navigate = useNavigate();
-
-  const handleSubmit = async (event) => {
+  const loginUser = async () => {
     try {
-      event.preventDefault();
-      const result = await apiUser.login(form);
-      console.log(result.data.message);
-      navigate("/");
-    } catch (error) {
-      console.error(error.response.data.message);
+      let result = await axios({
+        method: "POST",
+        url: "http://localhost:3600/api/users/login",
+        data: form,
+      });
+      const access_token = result.data.access_token;
+      localStorage.setItem("access_token", access_token);
+
+      loginCbHandler(true);
+    } catch (err) {
+      console.log(err);
     }
   };
+
+  const submitHandler = () => {
+    loginUser();
+  };
+  // const [form, setForm] = useState({
+  //   email: "",
+  //   password: "",
+  // });
+
+  // const navigate = useNavigate();
+
+  // const handleSubmit = async (event) => {
+  //   try {
+  //     event.preventDefault();
+  //     const result = await apiUser.login(form);
+  //     console.log(result.data.message);
+  //     navigate("/");
+  //   } catch (error) {
+  //     console.error(error.response.data.message);
+  //   }
+  // };
 
   return (
     <div className="Login">

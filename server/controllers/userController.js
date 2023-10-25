@@ -42,33 +42,63 @@ class UserController {
   static async login(req, res) {
     try {
       const { email, password } = req.body;
-      let result = await User.findOne({
-        where: { email },
+      let emailFound = await User.findOne({
+        where: {
+          email,
+        },
       });
 
-      if (result) {
-        // Gunakan bcrypt.compare untuk membandingkan password yang dimasukkan dengan password di-hash
-        const passwordMatch = await bcrypt.compare(password, result.password);
+      if (emailFound) {
+        if (decryptPwd(password, emailFound.password)) {
+          let access_token = tokenGenerator(emailFound);
 
-        if (passwordMatch) {
-          // Password cocok, kirim respons dengan data pengguna
-          res.status(200).json({ message: "Login Sukses" });
+          res.status(200).json({ access_token });
+
+          let verifyToken = tokenVerifier(access_token);
+          console.log(verifyToken);
         } else {
-          // Password tidak cocok
-          res.status(401).json({
-            message: "Invalid password",
+          res.status(403).json({
+            message: "Invalid password!",
           });
         }
       } else {
-        // Email tidak ditemukan
         res.status(404).json({
-          message: "Email not found",
+          message: "User not found!",
         });
       }
     } catch (err) {
       res.status(500).json(err);
     }
   }
+  //   try {
+  //     const { email, password } = req.body;
+  //     let result = await User.findOne({
+  //       where: { email },
+  //     });
+
+  //     if (result) {
+  //       // Gunakan bcrypt.compare untuk membandingkan password yang dimasukkan dengan password di-hash
+  //       const passwordMatch = await bcrypt.compare(password, result.password);
+
+  //       if (passwordMatch) {
+  //         // Password cocok, kirim respons dengan data pengguna
+  //         res.status(200).json({ message: "Login Sukses" });
+  //       } else {
+  //         // Password tidak cocok
+  //         res.status(401).json({
+  //           message: "Invalid password",
+  //         });
+  //       }
+  //     } else {
+  //       // Email tidak ditemukan
+  //       res.status(404).json({
+  //         message: "Email not found",
+  //       });
+  //     }
+  //   } catch (err) {
+  //     res.status(500).json(err);
+  //   }
+  // }
 
   static async delete(req, res) {
     try {
